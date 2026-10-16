@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Персональный план снижения веса</title>
+<style>
+  :root{
+    --accent:#16a34a;
+    --accent-soft:#dcfce7;
+    --ink:#0f172a;
+    --muted:#64748b;
+    --line:#e2e8f0;
+    --card:#ffffff;
+    --bg:#f4f7f5;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    background:linear-gradient(180deg,#eef6f0 0%,#f7faf8 320px,#f7faf8 100%);
+    color:var(--ink);
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:960px;margin:0 auto;padding:32px 18px 80px}
+  header{text-align:center;margin-bottom:28px}
+  header h1{font-size:clamp(24px,4vw,34px);margin:0 0 8px;letter-spacing:-.5px}
+  header p{color:var(--muted);margin:0;font-size:15px}
+
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:18px;
+    padding:22px;
+    box-shadow:0 1px 2px rgba(15,23,42,.04),0 8px 24px -16px rgba(15,23,42,.18);
+  }
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px}
+  .field label{display:block;font-size:13px;font-weight:600;color:var(--muted);margin-bottom:6px}
+  .field input,.field select{
+    width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:11px;
+    font-size:15px;font-family:inherit;color:var(--ink);background:#fbfdfc;outline:none;
+    transition:.15s;
+  }
+  .field input:focus,.field select:focus{border-color:var(--accent);background:#fff;box-shadow:0 0 0 3px var(--accent-soft)}
+
+  .sexrow{display:flex;gap:8px}
+  .sexrow label{
+    flex:1;text-align:center;padding:11px 8px;border:1px solid var(--line);border-radius:11px;
+    cursor:pointer;font-size:15px;font-weight:500;background:#fbfdfc;transition:.15s;margin:0;color:var(--ink);
+  }
+  .sexrow input{display:none}
+  .sexrow input:checked + span{color:var(--accent)}
+  .sexrow label:has(input:checked){border-color:var(--accent);background:var(--accent-soft)}
+
+  button.primary{
+    width:100%;margin-top:18px;padding:14px;border:0;border-radius:12px;cursor:pointer;
+    background:var(--accent);color:#fff;font-size:16px;font-weight:600;font-family:inherit;
+    transition:.15s;
+  }
+  button.primary:hover{background:#15803d}
+  button.primary:active{transform:scale(.995)}
+
+  .hidden{display:none}
+
+  .summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin:18px 0 8px}
+  .stat{background:#f8fbf9;border:1px solid var(--line);border-radius:14px;padding:14px}
+  .stat .k{font-size:12px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.4px}
+  .stat .v{font-size:22px;font-weight:700;margin-top:4px}
+  .stat .u{font-size:13px;font-weight:500;color:var(--muted)}
+
+  .macros{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+  .macro{flex:1;min-width:110px;border-radius:14px;padding:12px 14px;background:#f8fbf9;border:1px solid var(--line)}
+  .macro b{display:block;font-size:19px}
+  .macro span{font-size:12px;color:var(--muted);font-weight:600}
+
+  .warn{
+    background:#fffbeb;border:1px solid #fde68a;color:#92400e;
+    padding:12px 14px;border-radius:12px;font-size:14px;margin-top:14px;
+  }
+
+  h2.section{font-size:19px;margin:34px 0 14px;letter-spacing:-.2px}
+
+  .meal{
+    display:flex;gap:16px;align-items:flex-start;padding:18px 20px;
+    border:1px solid var(--line);border-radius:16px;background:#fff;margin-bottom:12px;
+  }
+  .meal .badge{
+    flex:0 0 auto;background:var(--accent-soft);color:#15803d;font-weight:700;
+    font-size:12px;padding:6px 10px;border-radius:999px;white-space:nowrap;
+  }
+  .meal .body{flex:1;min-width:0}
+  .meal h3{margin:0 0 6px;font-size:16px}
+  .meal .kcal{color:var(--muted);font-size:13px;margin-bottom:8px}
+  .meal .ing{font-size:14px;color:#334155;margin:0 0 8px}
+  .meal .steps{font-size:14px;color:var(--muted);margin:0;border-top:1px dashed var(--line);padding-top:8px}
+
+  .shop{columns:2;column-gap:24px;font-size:14px;padding-left:18px;margin:0}
+  .shop li{margin-bottom:5px;break-inside:avoid}
+  @media(max-width:600px){.shop{columns:1}}
+
+  .tips{font-size:14px;color:#334155;padding-left:20px;margin:0}
+  .tips li{margin-bottom:7px}
+
+  .actions{display:flex;gap:10px;margin-top:26px;flex-wrap:wrap}
+  .actions button{
+    flex:1;min-width:180px;padding:13px;border-radius:12px;font-size:15px;font-weight:600;
+    font-family:inherit;cursor:pointer;transition:.15s;
+  }
+  .actions .secondary{background:#fff;border:1px solid var(--line);color:var(--ink)}
+  .actions .secondary:hover{border-color:var(--accent);color:var(--accent)}
+
+  footer{text-align:center;color:var(--muted);font-size:12.5px;margin-top:32px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>План снижения веса</h1>
+    <p>Введите параметры — получите калории, БЖУ и меню на день с простыми рецептами</p>
+  </header>
+
+  <div class="card">
+    <div class="grid">
+      <div class="field">
+        <label>Пол</label>
+        <div class="sexrow">
+          <label><input type="radio" name="sex" value="m" checked><span>Мужчина</span></label>
+          <label><input type="radio" name="sex" value="f"><span>Женщина</span></label>
+        </div>
+      </div>
+      <div class="field">
+        <label>Возраст, лет</label>
+        <input id="age" type="number" value="30" min="14" max="90">
+      </div>
+      <div class="field">
+        <label>Вес, кг</label>
+        <input id="weight" type="number" value="85" min="35" max="250" step="0.5">
+      </div>
+      <div class="field">
+        <label>Рост, см</label>
+        <input id="height" type="number" value="178" min="130" max="220">
+      </div>
+      <div class="field">
+        <label>Активность</label>
+        <select id="activity">
+          <option value="1.2">Сидячая (мало движения)</option>
+          <option value="1.375">Лёгкая (1–3 тренировки/нед)</option>
+          <option value="1.55" selected>Средняя (3–5 тренировок/нед)</option>
+          <option value="1.725">Высокая (6–7 тренировок/нед)</option>
+          <option value="1.9">Очень высокая (физ. работа + спорт)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Целевой вес, кг <span style="font-weight:400">(необязательно)</span></label>
+        <input id="goal" type="number" value="75" min="35" max="250" step="0.5">
+      </div>
+      <div class="field">
+        <label>Срок, недель</label>
+        <input id="weeks" type="number" value="16" min="2" max="104">
+      </div>
+    </div>
+
+    <button class="primary" id="go">Рассчитать план</button>
+  </div>
+
+  <div id="out" class="hidden"></div>
+
+  <footer>Расчёты основаны на формуле Миффлина–Сан Жеора. Значения калорийности блюд — приблизительные.</footer>
+</div>
+
+<script>
+/* ============ БАЗА РЕЦЕПТОВ ============
+   n — название, k — ккал, p/f/c — белки/жиры/углеводы (г),
+   ing — [название, кол-во, единица], s — приготовление
+   Все значения — на одну базовую порцию.            */
+const RECIPES = {
+  breakfast: [
+    { n:"Овсянка с бананом и грецкими орехами", k:460, p:15, f:16, c:42,
+      ing:[["овсяные хлопья",50,"г"],["молоко 1–2%",150,"мл"],["банан",1,"шт"],["грецкие орехи",15,"г"],["корица",null,""]],
+      s:"Залить хлопья молоком, варить 4–5 минут. Добавить нарезанный банан, орехи и корицу." },
+
+    { n:"Омлет с овощами и сыром", k:370, p:24, f:24, c:8,
+      ing:[["яйца",3,"шт"],["помидор",1,"шт"],["болгарский перец",0.5,"шт"],["шпинат",30,"г"],["сыр",20,"г"],["масло растительное",1,"ч.л."]],
+      s:"Обжарить овощи 3 минуты, залить взбитыми яйцами, посыпать сыром, накрыть крышкой на 4 минуты." },
+
+    { n:"Творог с ягодами и мёдом", k:310, p:35, f:11, c:21,
+      ing:[["творог 5%",200,"г"],["ягоды",100,"г"],["мёд",1,"ч.л."],["корица",null,""]],
+      s:"Смешать всё в миске. Если творог сухой — добавить ложку йогурта." },
+
+    { n:"Греческий йогурт с гранолой", k:345, p:24, f:11, c:41,
+      ing:[["греческий йогурт 2%",200,"г"],["гранола",40,"г"],["ягоды",80,"г"]],
+      s:"Йогурт в миску, сверху гранола и ягоды. Гранолу добавлять перед едой, чтобы осталась хрустящей." },
+
+    { n:"Тост с авокадо и яйцом", k:400, p:20, f:22, c:30,
+      ing:[["цельнозерновой хлеб",60,"г"],["авокадо",70,"г"],["яйца",2,"шт"],["соль, перец, лимон",null,""]],
+      s:"Хлеб подсушить в тостере. Авокадо размять с лимоном и солью, выложить на хлеб, сверху — яйца (пашот или глазунья)." },
+
+    { n:"Смузи с бананом, шпинатом и протеином", k:340, p:32, f:6, c:45,
+      ing:[["банан",1,"шт"],["шпинат",50,"г"],["протеин",30,"г"],["молоко 1–2%",200,"мл"]],
+      s:"Всё в блендер, взбить 30 секунд. Пить сразу." },
+
+    { n:"Сырники из творога с ягодами", k:400, p:34, f:13, c:30,
+      ing:[["творог 5%",200,"г"],["яйцо",1,"шт"],["овсяная мука",30,"г"],["ягоды",100,"г"],["мёд",1,"ч.л."]],
+      s:"Смешать творог, яйцо и муку. Слепить 4 сырника, обжарить на антипригарной сковороде по 3 минуты с каждой стороны." }
+  ],
+
+  lunch: [
+    { n:"Куриная грудка с гречкой и салатом", k:470, p:42, f:10, c:51,
+      ing:[["куриная грудка",150,"г"],["гречка (сухая)",60,"г"],["огурцы",100,"г"],["помидоры",100,"г"],["оливковое масло",1,"ч.л."]],
+      s:"Гречку отварить. Грудку посолить и обжарить/запечь 12–15 минут. Овощи нарезать, заправить маслом." },
+
+    { n:"Тушёная индейка с овощами", k:430, p:40, f:14, c:32,
+      ing:[["индейка",150,"г"],["кабачок",150,"г"],["болгарский перец",100,"г"],["лук",50,"г"],["томаты",150,"г"],["масло растительное",1,"ч.л."]],
+      s:"Обжарить лук, добавить индейку, через 5 минут — овощи и томаты. Тушить под крышкой 15 минут." },
+
+    { n:"Салат с тунцом и фасолью", k:420, p:35, f:14, c:36,
+      ing:[["тунец в собственном соку",150,"г"],["фасоль красная (готовая)",150,"г"],["огурец",100,"г"],["лук красный",30,"г"],["оливковое масло",1,"ч.л."],["лимонный сок",null,""]],
+      s:"Всё смешать, заправить маслом и лимоном. Солить в самом конце." },
+
+    { n:"Греческий салат с курицей", k:460, p:38, f:22, c:22,
+      ing:[["куриная грудка",120,"г"],["огурец",100,"г"],["помидор",100,"г"],["болгарский перец",50,"г"],["фета",40,"г"],["оливки",30,"г"],["оливковое масло",1,"ч.л."]],
+      s:"Курицу отварить или запечь, нарезать. Овощи крупно порезать, добавить фету и оливки, заправить маслом." },
+
+    { n:"Суп-пюре из тыквы с курицей", k:380, p:30, f:12, c:36,
+      ing:[["тыква",300,"г"],["куриная грудка",120,"г"],["лук",50,"г"],["морковь",50,"г"],["сливки 10%",50,"мл"],["масло растительное",1,"ч.л."]],
+      s:"Овощи и курицу варить 20 минут, пробить блендером, влить сливки, прогреть." },
+
+    { n:"Булгур с курицей и овощами", k:500, p:38, f:13, c:56,
+      ing:[["булгур (сухой)",60,"г"],["куриная грудка",150,"г"],["болгарский перец",100,"г"],["кабачок",100,"г"],["масло растительное",1,"ч.л."]],
+      s:"Булгур отварить. Курицу и овощи обжарить 10 минут, смешать с булгуром." },
+
+    { n:"Чечевичный суп с курицей", k:400, p:32, f:10, c:42,
+      ing:[["чечевица (сухая)",60,"г"],["куриная грудка",120,"г"],["морковь",60,"г"],["лук",50,"г"],["томаты",100,"г"]],
+      s:"Чечевицу и овощи варить 25 минут, добавить нарезанную курицу, варить ещё 10 минут." }
+  ],
+
+  dinner: [
+    { n:"Белая рыба, запечённая с брокколи", k:350, p:42, f:11, c:15,
+      ing:[["треска (или минтай)",200,"г"],["брокколи",250,"г"],["оливковое масло",1,"ч.л."],["лимон",null,""]],
+      s:"Рыбу сбрызнуть лимоном, запечь 15 минут при 200 °C. Брокколи отварить 4 минуты или запечь рядом." },
+
+    { n:"Куриное филе на гриле с овощами", k:400, p:42, f:14, c:24,
+      ing:[["куриное филе",160,"г"],["кабачок",150,"г"],["болгарский перец",100,"г"],["баклажан",100,"г"],["оливковое масло",1,"ч.л."]],
+      s:"Овощи и филе смазать маслом, посолить, готовить на гриле/сковороде-гриль 6–8 минут с каждой стороны." },
+
+    { n:"Творожная запеканка с ягодами", k:350, p:32, f:10, c:32,
+      ing:[["творог 5%",200,"г"],["яйцо",1,"шт"],["овсяная мука",25,"г"],["ягоды",100,"г"]],
+      s:"Смешать, выложить в форму, запекать 25 минут при 180 °C. Сверху — ягоды." },
+
+    { n:"Омлет с овощами и зеленью", k:320, p:22, f:22, c:8,
+      ing:[["яйца",3,"шт"],["кабачок",100,"г"],["помидор",100,"г"],["зелень",null,""],["масло растительное",1,"ч.л."]],
+      s:"Овощи обжарить 4 минуты, залить яйцами, готовить под крышкой 5 минут, посыпать зеленью." },
+
+    { n:"Стейк из индейки с салатом", k:380, p:40, f:16, c:12,
+      ing:[["индейка (стейк)",180,"г"],["микс салата",100,"г"],["огурец",100,"г"],["оливковое масло",1,"ч.л."]],
+      s:"Индейку обжарить по 4 минуты с каждой стороны. Салат заправить маслом и лимоном." },
+
+    { n:"Креветки, тушёные с овощами", k:330, p:32, f:12, c:20,
+      ing:[["креветки",180,"г"],["кабачок",150,"г"],["болгарский перец",100,"г"],["чеснок",1,"зуб."],["оливковое масло",1,"ч.л."]],
+      s:"Овощи обжарить 5 минут, добавить креветки и чеснок, готовить ещё 4 минуты." },
+
+    { n:"Куриные котлеты на пару с овощами", k:400, p:38, f:16, c:24,
+      ing:[["куриный фарш",180,"г"],["яйцо",1,"шт"],["лук",50,"г"],["овощной гарнир (брокколи/стручковая фасоль)",200,"г"]],
+      s:"Фарш смешать с яйцом и луком, сформировать котлеты, готовить на пару 20 минут." }
+  ],
+
+  snack: [
+    { n:"Яблоко с грецкими орехами", k:190, p:3, f:10, c:26,
+      ing:[["яблоко",180,"г"],["грецкие орехи",15,"г"]], s:"Просто съесть вместе. Орехи — не больше горсти." },
+
+    { n:"Творог с огурцом и зеленью", k:160, p:20, f:5, c:7,
+      ing:[["творог 5%",120,"г"],["огурец",100,"г"],["зелень",null,""]], s:"Огурец нарезать, смешать с творогом, посолить, добавить зелень." },
+
+    { n:"Протеиновый коктейль", k:130, p:25, f:2, c:4,
+      ing:[["протеин",30,"г"],["вода",300,"мл"]], s:"Размешать в шейкере. Хорошо после тренировки." },
+
+    { n:"Миндаль", k:160, p:6, f:14, c:6,
+      ing:[["миндаль",25,"г"]], s:"Отвесить ровно 25 г — на глаз легко съесть втрое больше." },
+
+    { n:"Греческий йогурт с корицей", k:130, p:15, f:3, c:10,
+      ing:[["греческий йогурт 2%",150,"г"],["корица",null,""]], s:"Йогурт + щедрая щепотка корицы." },
+
+    { n:"Морковные палочки с хумусом", k:180, p:6, f:10, c:18,
+      ing:[["морковь",150,"г"],["хумус",40,"г"]], s:"Морковь нарезать палочками, макать в хумус." }
+  ]
+};
+
+/* ============ РАСЧЁТЫ ============ */
+
+function bmr(sex, w, h, a){
+  return sex === 'm'
+    ? 10*w + 6.25*h - 5*a + 5
+    : 10*w + 6.25*h - 5*a - 161;
+}
+
+function pick(list, targetKcal, used){
+  const cands = [];
+  for (const r of list){
+    for (let s = 0.5; s <= 2.001; s += 0.25){
+      cands.push({ r, s, err: Math.abs(r.k * s - targetKcal) });
+    }
+  }
+  cands.sort((x, y) => x.err - y.err);
+  let pool = cands.filter(c => !used.includes(c.r.n)).slice(0, 6);
+  if (!pool.length) pool = cands.slice(0, 6);
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+function fmtQty(v){
+  if (v >= 20) return Math.round(v / 5) * 5;
+  if (v >= 5)  return Math.round(v);
+  return Math.round(v * 10) / 10;
+}
+
+function round5(x){ return Math.round(x/5)*5; }
+
+/* ============ ГЕНЕРАЦИЯ ПЛАНА ============ */
+
+let STATE = null;
+
+function buildPlan(){
+  const sex    = document.querySelector('input[name="sex"]:checked').value;
+  const age    = +document.getElementById('age').value;
+  const weight = +document.getElementById('weight').value;
+  const height = +document.getElementById('height').value;
+  const act    = +document.getElementById('activity').value;
+  const goal   = parseFloat(document.getElementById('goal').value) || null;
+  const weeks  = parseInt(document.getElementById('weeks').value) || null;
+
+  const b = bmr(sex, weight, height, age);
+  const tdee = b * act;
+
+  // Целевая калорийность
+  let target;
+  if (goal && weeks && goal < weight){
+    const needDeficit = (weight - goal) * 7700 / (weeks * 7);
+    target = tdee - needDeficit;
+  } else {
+    target = tdee * 0.8; // дефолт: дефицит 20%
+  }
+  const floorKcal = Math.max(b * 1.1, sex === 'm' ? 1500 : 1200);
+  const maxDeficit = tdee * 0.25;
+  const rawTarget = target;
+  target = Math.max(target, tdee - maxDeficit);
+  target = Math.max(target, floorKcal);
+  target = Math.min(target, tdee);
+  target = round5(target);
+
+  // БЖУ
+  let protein = Math.min(1.8 * weight, 0.40 * target / 4);
+  let fat     = Math.min(0.9 * weight, 0.35 * target / 9);
+  let carbs   = Math.max(0, (target - protein*4 - fat*9) / 4);
+  protein = Math.round(protein);
+  fat     = Math.round(fat);
+  carbs   = Math.round(carbs);
+
+  // Предупреждение о нереалистичном сроке
+  const weeklyLoss = (tdee - target) * 7 / 7700;
+  const wantedLoss = (goal && weeks && goal < weight) ? (weight - goal) / weeks : null;
+  let warning = null;
+  if (wantedLoss && wantedLoss > weight * 0.01){
+    warning = `Сбросить ${(weight-goal).toFixed(1)} кг за ${weeks} нед. — это ~${wantedLoss.toFixed(2)} кг в неделю. Безопасный темп — до 1% массы тела (${(weight*0.01).toFixed(2)} кг/нед), то есть примерно ${Math.ceil((weight-goal)/(weight*0.01))} недель. План скорректирован в сторону безопасного дефицита.`;
+  } else if (rawTarget < floorKcal){
+    warning = `Расчётный дефицит слишком большой, калорийность поднята до безопасного минимума (${Math.round(floorKcal)} ккал).`;
+  }
+
+  // Распределение калорий по приёмам пищи
+  const shares = { breakfast:0.27, lunch:0.33, dinner:0.30, snack:0.10 };
+  const used = [];
+  const meals = [];
+
+  for (const key of ['breakfast','lunch','dinner']){
+    const p = pick(RECIPES[key], target * shares[key], used);
+    used.push(p.r.n);
+    meals.push({ key, ...p });
+  }
+  const spent = meals.reduce((s,m) => s + m.r.k * m.s, 0);
+  const snackTarget = Math.max(90, target - spent);
+  const sp = pick(RECIPES.snack, snackTarget, used);
+  meals.push({ key:'snack', ...sp });
+
+  const totalKcal = meals.reduce((s,m) => s + m.r.k * m.s, 0);
+
+  STATE = { sex, age, weight, height, act, goal, weeks,
+            b:Math.round(b), tdee:Math.round(tdee), target,
+            protein, fat, carbs, weeklyLoss, warning, meals, totalKcal };
+  render();
+}
+
+/* ============ ОТРИСОВКА ============ */
+
+const TITLES = { breakfast:"Завтрак", lunch:"Обед", dinner:"Ужин", snack:"Перекус" };
+
+function render(){
+  const s = STATE;
+  const out = document.getElementById('out');
+
+  const mealCards = s.meals.map(m => {
+    const r = m.r, sc = m.s;
+    const ings = r.ing.map(([name, qty, unit]) => {
+      if (qty === null) return name;
+      return `${name} — ${fmtQty(qty * sc)} ${unit}`;
+    }).join(' · ');
+
+    return `
+      <div class="meal">
+        <div class="badge">${TITLES[m.key]}${sc !== 1 ? ` ×${sc}` : ''}</div>
+        <div class="body">
+          <h3>${r.n}</h3>
+          <div class="kcal">${Math.round(r.k*sc)} ккал · Б ${Math.round(r.p*sc)} · Ж ${Math.round(r.f*sc)} · У ${Math.round(r.c*sc)}</div>
+          <p class="ing">${ings}</p>
+          <p class="steps">${r.s}</p>
+        </div>
+      </div>`;
+  }).join('');
+
+  // Список покупок
+  const map = new Map();
+  s.meals.forEach(m => {
+    m.r.ing.forEach(([name, qty, unit]) => {
+      if (qty === null) return;
+      const key = name + '|' + unit;
+      const prev = map.get(key) || { name, unit, qty: 0 };
+      prev.qty += qty * m.s;
+      map.set(key, prev);
+    });
+  });
+  const shop = [...map.values()]
+    .sort((a,b) => a.name.localeCompare(b.name,'ru'))
+    .map(i => `<li>${i.name} — ${fmtQty(i.qty)} ${i.unit}</li>`).join('');
+
+  const lossPerWeek = (s.tdee - s.target) * 7 / 7700;
+
+  out.innerHTML = `
+    <h2 class="section">Ваши цифры</h2>
+    <div class="card">
+      <div class="summary">
+        <div class="stat"><div class="k">Базовый обмен</div><div class="v">${s.b} <span class="u">ккал</span></div></div>
+        <div class="stat"><div class="k">Расход с активностью</div><div class="v">${s.tdee} <span class="u">ккал</span></div></div>
+        <div class="stat"><div class="k">Цель на день</div><div class="v" style="color:var(--accent)">${s.target} <span class="u">ккал</span></div></div>
+        <div class="stat"><div class="k">Дефицит</div><div class="v">${s.tdee - s.target} <span class="u">ккал</span></div></div>
+        <div class="stat"><div class="k">Темп снижения</div><div class="v">${lossPerWeek.toFixed(2)} <span class="u">кг/нед</span></div></div>
+      </div>
+
+      <div class="macros">
+        <div class="macro"><b>${s.protein} г</b><span>БЕЛКИ · ${s.protein*4} ккал</span></div>
+        <div class="macro"><b>${s.fat} г</b><span>ЖИРЫ · ${s.fat*9} ккал</span></div>
+        <div class="macro"><b>${s.carbs} г</b><span>УГЛЕВОДЫ · ${s.carbs*4} ккал</span></div>
+        <div class="macro"><b>${(s.protein*1.8/ (s.protein||1)).toFixed(1)}</b><span>—</span></div>
+      </div>
+
+      ${s.warning ? `<div class="warn">⚠️ ${s.warning}</div>` : ''}
+    </div>
+
+    <h2 class="section">Меню на день · ${Math.round(s.totalKcal)} ккал</h2>
+    ${mealCards}
+
+    <h2 class="section">Список покупок на день</h2>
+    <div class="card"><ul class="shop">${shop}</ul></div>
+
+    <h2 class="section">Что важно помнить</h2>
+    <div class="card">
+      <ul class="tips">
+        <li><b>Вода:</b> 30 мл на кг веса в сутки (для ${s.weight} кг — примерно ${Math.round(s.weight*30/100)*100} мл).</li>
+        <li><b>Белок в каждом приёме пищи</b> — он даёт сытость и сохраняет мышцы при дефиците.</li>
+        <li><b>Овощи</b> — минимум 400 г в день, они добавляют объём и клетчатку почти без калорий.</li>
+        <li><b>Взвешивайте еду</b> первые 2–3 недели: глазомер сильно врёт, особенно с маслом и орехами.</li>
+        <li><b>Сон 7–8 часов</b> — при недосыпе растёт аппетит и падает расход энергии.</li>
+        <li><b>Силовые тренировки 2–3 раза в неделю</b> помогают терять именно жир, а не мышцы.</li>
+        <li>Раз в 1–2 недели пересчитывайте план: чем меньше вес, тем ниже расход.</li>
+      </ul>
+    </div>
+
+    <div class="actions">
+      <button class="secondary" id="regen">🔄 Другое меню</button>
+    </div>
+  `;
+
+  out.classList.remove('hidden');
+  document.getElementById('regen').onclick = regenerate;
+  out.scrollIntoView({ behavior:'smooth', block:'start' });
+}
+
+function regenerate(){
+  const s = STATE;
+  if (!s) return;
+  const shares = { breakfast:0.27, lunch:0.33, dinner:0.30 };
+  const used = [];
+  const meals = [];
+  for (const key of ['breakfast','lunch','dinner']){
+    const p = pick(RECIPES[key], s.target * shares[key], used);
+    used.push(p.r.n);
+    meals.push({ key, ...p });
+  }
+  const spent = meals.reduce((a,m) => a + m.r.k * m.s, 0);
+  const sp = pick(RECIPES.snack, Math.max(90, s.target - spent), used);
+  meals.push({ key:'snack', ...sp });
+
+  STATE.meals = meals;
+  STATE.totalKcal = meals.reduce((a,m) => a + m.r.k * m.s, 0);
+  render();
+}
+
+document.getElementById('go').onclick = buildPlan;
+</script>
+</body>
+</html>
